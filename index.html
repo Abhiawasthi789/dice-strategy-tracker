@@ -130,7 +130,11 @@
       const trigger=state.cycleStart*(1-cfg.drawdown/100);
       status=state.drawdownActive?'10% drawdown recovery active':'Standard recovery active';
       explain=state.drawdownActive?`First drawdown recovery bet was ${pct(cfg.recoveryPct)} of the balance when triggered. Next bet compounds by ${cfg.mult}× after each result.`:`Recover to the fixed cycle-start target. If balance reaches ${fmt(trigger)}, the next bet resets to ${pct(cfg.recoveryPct)} of current balance.`;
-      progress=Math.max(0,Math.min(100,(state.balance-trigger)/(state.cycleStart-trigger)*100));label=`Recovery progress · ${fmt(state.balance)} toward ${fmt(state.cycleStart)}`;
+      progress=Math.max(0,Math.min(100,(state.balance-trigger)/(state.cycleStart-trigger)*100));
+      const recovered=Math.max(0,Math.min(state.cycleStart-trigger,state.balance-trigger));
+      const remaining=Math.max(0,state.cycleStart-state.balance);
+      label=`Recovery progress · ${progress.toFixed(1)}% complete`;
+      explain += ` Progress: ${fmt(recovered)} recovered; ${fmt(remaining)} remaining to reach ${fmt(state.cycleStart)}.`;
     }
     $('status').textContent=status;$('explain').textContent=explain;$('progress').style.width=progress+'%';$('progressLabel').textContent=label;
     $('drawdownLine').textContent=`Drawdown trigger: ${fmt(state.cycleStart*(1-cfg.drawdown/100))}`;
