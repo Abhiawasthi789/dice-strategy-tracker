@@ -37,6 +37,11 @@
     <section class="panel stat"><small>Cycle change</small><strong id="cycleChange">₹0.00</strong></section>
     <section class="panel stat"><small>All-time session change</small><strong id="sessionChange">₹0.00</strong></section>
   </div>
+  <section class="panel" aria-label="Session profit target">
+    <div class="topline"><strong>SESSION PROFIT TARGET · +10%</strong><strong id="sessionTargetPct">0.0%</strong></div>
+    <div class="bar"><span id="sessionTargetProgress"></span></div>
+    <div class="topline note"><span id="sessionTargetDetail">₹0.00 profit toward ₹10.00 target</span><span id="sessionTargetRemaining">₹10.00 remaining</span></div>
+  </section>
   <section class="panel next">
     <div class="topline"><div><div class="note">NEXT BET</div><div class="amount" id="nextBet">₹0.10</div></div><span class="pill" id="modePill">NORMAL MODE</span></div>
     <div class="status" id="status">Normal cycle · 0 / 3 consecutive wins</div>
@@ -120,6 +125,13 @@
     const change=state.balance-state.cycleStart, session=state.balance-state.sessionStart;
     $('cycleChange').textContent=(change>=0?'+':'')+fmt(change);$('cycleChange').className=change>=0?'green':'red';
     $('sessionChange').textContent=(session>=0?'+':'')+fmt(session);$('sessionChange').className=session>=0?'green':'red';
+    const sessionGoal=state.sessionStart*0.10;
+    const sessionProgress=Math.max(0,Math.min(100,session/sessionGoal*100));
+    const sessionRemaining=Math.max(0,sessionGoal-session);
+    $('sessionTargetPct').textContent=sessionProgress.toFixed(1)+'%';
+    $('sessionTargetProgress').style.width=sessionProgress+'%';
+    $('sessionTargetDetail').textContent=fmt(Math.max(0,Math.min(sessionGoal,session)))+' profit toward '+fmt(sessionGoal)+' target';
+    $('sessionTargetRemaining').textContent=sessionRemaining>1e-9?fmt(sessionRemaining)+' remaining':'Target achieved!';
     $('nextBet').textContent=fmt(state.nextBet);$('modePill').textContent=modeName()+' MODE';
     let status,explain,progress=0,label;
     if(state.mode==='normal'){
