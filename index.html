@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dice Strategy Tracker</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#151d32;--panel2:#1c2740;--text:#eef3ff;--muted:#a8b4cc;--line:#2d3a58;--green:#35c98a;--red:#ff6b75;--blue:#83a9ff;--amber:#ffc66d}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#0b1020,#111a2d);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:24px}.wrap{max-width:1050px;margin:auto}h1{margin:0 0 5px;font-size:clamp(25px,4vw,36px)}.sub{color:var(--muted);margin:0 0 22px}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:17px;margin-bottom:14px}.stat small,.field label{display:block;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.07em}.stat strong{display:block;font-size:clamp(20px,3vw,28px);margin-top:5px;overflow-wrap:anywhere}.green{color:var(--green)}.red{color:var(--red)}.blue{color:var(--blue)}.amber{color:var(--amber)}.section-title{font-size:17px;margin:0 0 14px}.fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.field input{width:100%;margin-top:6px;background:#0d1528;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:11px;font-size:15px}.field input:focus{outline:2px solid var(--blue);border-color:transparent}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px}button{border:0;border-radius:10px;padding:12px 19px;font-weight:700;font-size:15px;cursor:pointer;color:#08111f;background:var(--green)}button.loss{background:var(--red)}button.secondary{background:#344362;color:var(--text)}button:disabled{opacity:.35;cursor:not-allowed}.next{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:18px}.next .amount{font-size:clamp(28px,5vw,42px);font-weight:800;margin:2px 0}.note{color:var(--muted);font-size:13px}.status{font-weight:750;font-size:18px;margin:3px 0 8px}.bar{height:9px;background:#0b1325;border-radius:99px;overflow:hidden;margin:10px 0}.bar>span{display:block;height:100%;background:var(--blue);width:0%}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:650px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}th{color:var(--muted);font-size:12px;text-transform:uppercase}.empty{color:var(--muted);padding:15px 0}.warning{border-left:3px solid var(--amber);padding:9px 12px;background:#2a241b;color:#f4d7a6;border-radius:7px;font-size:13px;margin-top:12px}.rest-banner{display:none;border:2px solid var(--green);background:linear-gradient(135deg,#123d32,#174b3c);border-radius:18px;padding:24px;text-align:center;margin:0 0 14px;box-shadow:0 8px 30px #0005}.rest-banner.show{display:block}.rest-banner h2{font-size:clamp(25px,5vw,38px);line-height:1.15;margin:0 0 8px;color:#b9ffdc}.rest-banner p{font-size:16px;margin:0;color:#e5fff1}.keys{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.key{border:1px solid var(--line);background:#0d1528;border-radius:6px;padding:3px 8px;font-size:12px;color:var(--muted)}.rules{color:var(--muted);font-size:13px}.rules li{margin:5px 0}.topline{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.pill{border:1px solid var(--line);padding:5px 10px;border-radius:99px;color:var(--muted);font-size:12px}
+@media(max-width:760px){body{padding:14px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fields{grid-template-columns:repeat(2,minmax(0,1fr))}.panel{padding:14px}}
+@media(max-width:420px){.fields{grid-template-columns:1fr 1fr}.actions button{flex:1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Dice Strategy Tracker</h1>
+  <p class="sub">Manual WIN / LOSS tracker · 1.31× target payout · runs locally in your browser</p>
+  <section class="panel">
+    <h2 class="section-title">Strategy settings</h2>
+    <div class="fields">
+      <div class="field"><label for="start">Starting bankroll (₹)</label><input id="start" type="number" min="0.01" step="0.01" value="100"></div>
+      <div class="field"><label for="basePct">Normal base bet (%)</label><input id="basePct" type="number" min="0.0001" step="0.01" value="0.1"></div>
+      <div class="field"><label for="mult">Payout multiplier (×)</label><input id="mult" type="number" min="1.0001" step="0.01" value="1.31"></div>
+      <div class="field"><label for="streak">Wins to complete cycle</label><input id="streak" type="number" min="1" step="1" value="3"></div>
+      <div class="field"><label for="drawdown">Drawdown trigger (%)</label><input id="drawdown" type="number" min="0.01" max="99.99" step="0.1" value="10"></div>
+      <div class="field"><label for="recoveryPct">Drawdown recovery base (%)</label><input id="recoveryPct" type="number" min="0.0001" step="0.1" value="1"></div>
+      <div class="field"><label for="currency">Currency label</label><input id="currency" type="text" maxlength="8" value="₹"></div>
+      <div class="field"><label for="precision">Display decimals</label><input id="precision" type="number" min="0" max="8" step="1" value="2"></div>
+    </div>
+    <div class="actions"><button id="apply" class="secondary">Apply settings & reset session</button></div>
+    <div class="note">Applying settings resets the current session and history. The tracker does not connect to Stake or place bets.</div>
+  </section>
+  <section id="restBanner" class="rest-banner" role="status" aria-live="polite"><h2>🎉 You’re up 10% — TAKE A REST!</h2><p>You have reached your session profit target. Consider stopping now and protecting your winnings.</p></section>
+  <div class="grid">
+    <section class="panel stat"><small>Current bankroll</small><strong id="balance">₹100.00</strong></section>
+    <section class="panel stat"><small>Cycle-start bankroll / recovery target</small><strong id="target">₹100.00</strong></section>
+    <section class="panel stat"><small>Cycle change</small><strong id="cycleChange">₹0.00</strong></section>
+    <section class="panel stat"><small>All-time session change</small><strong id="sessionChange">₹0.00</strong></section>
+  </div>
+  <section class="panel next">
+    <div class="topline"><div><div class="note">NEXT BET</div><div class="amount" id="nextBet">₹0.10</div></div><span class="pill" id="modePill">NORMAL MODE</span></div>
+    <div class="status" id="status">Normal cycle · 0 / 3 consecutive wins</div>
+    <div class="note" id="explain">Base bet is 0.1% of the cycle-start bankroll.</div>
+    <div class="bar"><span id="progress"></span></div>
+    <div class="topline note"><span id="progressLabel">Cycle progress</span><span id="drawdownLine">10% trigger at ₹90.00</span></div>
+    <div class="actions">
+      <button id="win">✓ WIN</button><button id="loss" class="loss">✕ LOSS</button><button id="undo" class="secondary" disabled>Undo last result</button><button id="reset" class="secondary">Reset session</button>
+    </div>
+    <div class="keys"><span class="key">↑ Up Arrow = WIN</span><span class="key">↓ Down Arrow = LOSS</span><span class="key">Esc = Undo</span></div>
+    <div id="warning" class="warning" hidden></div>
+  </section>
+  <section class="panel">
+    <div class="topline"><h2 class="section-title">Bet history</h2><div class="actions" style="margin:0"><button id="csv" class="secondary">Export CSV</button><button id="clear" class="secondary">Clear history</button></div></div>
+    <div class="table-wrap"><table><thead><tr><th>#</th><th>Result</th><th>Bet</th><th>Net change</th><th>Balance after</th><th>Mode after</th></tr></thead><tbody id="history"><tr><td colspan="6" class="empty">No bets recorded yet.</td></tr></tbody></table></div>
+  </section>
+  <section class="panel">
+    <h2 class="section-title">How this tracker applies your rules</h2>
+    <ol class="rules">
+      <li>Normal mode starts with 0.1% of the cycle-start bankroll. Each consecutive WIN increases the next bet by the payout multiplier. Complete 3 consecutive wins to start a fresh cycle at the current balance.</li>
+      <li>A LOSS before the win target starts standard recovery. The recovery target stays fixed at the bankroll recorded at the beginning of that cycle. The next bet progresses by 1.31× after every result.</li>
+      <li>If balance reaches or falls below 90% of the cycle-start bankroll, drawdown recovery activates. Its first bet is 1% of the balance at activation; after that, the next bet progresses by 1.31× after every result.</li>
+      <li>Recovery ends when balance is back at or above the fixed cycle-start target. The tracker then starts a new normal cycle with a 0.1% base bet.</li>
+      <li>A WIN adds (multiplier − 1) × bet to bankroll; a LOSS subtracts the full bet. Bet amounts are rounded to the configured display precision.</li>
+    </ol>
+    <div class="warning">Important: this is a record-keeping calculator, not a winning system. A 1.31× progression does not guarantee recovery; a sequence of losses can exhaust the bankroll. Check Stake's minimum/maximum bet limits and actual payout/rounding before using any amount.</div>
+  </section>
+</div>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const fields = ['start','basePct','mult','streak','drawdown','recoveryPct','currency','precision'];
+  let cfg, state, history = [], snapshots = [];
+  const n = v => Number(v);
+  const roundTo = (v, d) => { const p = 10 ** d; return Math.round((v + Number.EPSILON) * p) / p; };
+  const fmt = v => \`\${cfg.currency}\${Number(v).toLocaleString('en-IN',{minimumFractionDigits:cfg.precision,maximumFractionDigits:cfg.precision})}\`;
+  const pct = v => \`\${Number(v).toFixed(2)}%\`;
+  function readConfig(){
+    const c = {start:n($('start').value),basePct:n($('basePct').value),mult:n($('mult').value),streak:Math.floor(n($('streak').value)),drawdown:n($('drawdown').value),recoveryPct:n($('recoveryPct').value),currency:$('currency').value || '₹',precision:Math.floor(n($('precision').value))};
+    if (!(c.start>0) || !(c.basePct>0) || !(c.mult>1) || !(c.streak>=1) || !(c.drawdown>0&&c.drawdown<100) || !(c.recoveryPct>0) || !(c.precision>=0&&c.precision<=8)) throw new Error('Please enter valid positive settings. Multiplier must be above 1 and drawdown must be between 0 and 100.');
+    return c;
+  }
+  function baseBet(){ return roundTo(state.cycleStart * cfg.basePct/100,cfg.precision); }
+  function drawdownBet(){ return roundTo(state.balance * cfg.recoveryPct/100,cfg.precision); }
+  function init(){
+    cfg=readConfig(); state={balance:roundTo(cfg.start,cfg.precision),sessionStart:roundTo(cfg.start,cfg.precision),cycleStart:roundTo(cfg.start,cfg.precision),mode:'normal',wins:0,nextBet:0,drawdownActive:false,betNo:0};
+    state.nextBet=baseBet(); history=[];snapshots=[]; render();
+  }
+  function cloneState(){return JSON.parse(JSON.stringify(state));}
+  function modeName(){return state.mode==='normal'?'NORMAL':state.drawdownActive?'10% DRAWDOWN RECOVERY':'STANDARD RECOVERY';}
+  function record(result){
+    if (state.nextBet<=0 || state.nextBet>state.balance + 1e-9) return;
+    snapshots.push({state:cloneState(),historyLength:history.length});
+    const bet=roundTo(state.nextBet,cfg.precision);
+    const net=result==='WIN'?roundTo(bet*(cfg.mult-1),cfg.precision):-bet;
+    state.balance=roundTo(state.balance+net,cfg.precision); state.betNo++;
+    if(state.mode==='normal'){
+      if(result==='WIN'){
+        state.wins++;
+        if(state.wins>=cfg.streak){
+          state.cycleStart=state.balance;state.mode='normal';state.wins=0;state.drawdownActive=false;state.nextBet=baseBet();
+        } else state.nextBet=roundTo(bet*cfg.mult,cfg.precision);
+      } else {
+        state.mode='recovery';state.wins=0;state.nextBet=roundTo(bet*cfg.mult,cfg.precision);
+      }
+    } else {
+      if(!state.drawdownActive && state.balance<=state.cycleStart*(1-cfg.drawdown/100)+1e-9){
+        state.drawdownActive=true;state.nextBet=drawdownBet();
+      } else if(state.balance>=state.cycleStart-1e-9){
+        state.balance=Math.max(state.balance,state.cycleStart);state.cycleStart=state.balance;state.mode='normal';state.wins=0;state.drawdownActive=false;state.nextBet=baseBet();
+      } else state.nextBet=roundTo(bet*cfg.mult,cfg.precision);
+    }
+    if(state.mode==='recovery' && !state.drawdownActive && state.balance<=state.cycleStart*(1-cfg.drawdown/100)+1e-9){
+      state.drawdownActive=true;state.nextBet=drawdownBet();
+    }
+    history.push({no:state.betNo,result,bet,net,balance:state.balance,mode:modeName()});
+    render();
+  }
+  function render(){
+    $('balance').textContent=fmt(state.balance);$('target').textContent=fmt(state.cycleStart);
+    const change=state.balance-state.cycleStart, session=state.balance-state.sessionStart;
+    $('cycleChange').textContent=(change>=0?'+':'')+fmt(change);$('cycleChange').className=change>=0?'green':'red';
+    $('sessionChange').textContent=(session>=0?'+':'')+fmt(session);$('sessionChange').className=session>=0?'green':'red';
+    $('nextBet').textContent=fmt(state.nextBet);$('modePill').textContent=modeName()+' MODE';
+    let status,explain,progress=0,label;
+    if(state.mode==='normal'){
+      status=\`Normal cycle · \${state.wins} / \${cfg.streak} consecutive wins\`;
+      explain=\`Normal base: \${pct(cfg.basePct)} of cycle-start bankroll. A WIN advances the next bet by \${(cfg.mult-1)*100}% of the previous bet.\`;
+      progress=state.wins/cfg.streak*100;label='Consecutive-win progress';
+    } else {
+      const trigger=state.cycleStart*(1-cfg.drawdown/100);
+      status=state.drawdownActive?'10% drawdown recovery active':'Standard recovery active';
+      explain=state.drawdownActive?\`First drawdown recovery bet was \${pct(cfg.recoveryPct)} of the balance when triggered. Next bet compounds by \${cfg.mult}× after each result.\`:\`Recover to the fixed cycle-start target. If balance reaches \${fmt(trigger)}, the next bet resets to \${pct(cfg.recoveryPct)} of current balance.\`;
+      progress=Math.max(0,Math.min(100,(state.balance-trigger)/(state.cycleStart-trigger)*100));label=\`Recovery progress · \${fmt(state.balance)} toward \${fmt(state.cycleStart)}\`;
+    }
+    $('status').textContent=status;$('explain').textContent=explain;$('progress').style.width=progress+'%';$('progressLabel').textContent=label;
+    $('drawdownLine').textContent=\`Drawdown trigger: \${fmt(state.cycleStart*(1-cfg.drawdown/100))}\`;
+    $('restBanner').classList.toggle('show', state.balance >= state.sessionStart * 1.10 - 1e-9);
+    const cannot=state.nextBet>state.balance+1e-9 || state.nextBet<=0;
+    $('win').disabled=cannot;$('loss').disabled=cannot;$('undo').disabled=snapshots.length===0;
+    const warning=$('warning');
+    if(cannot){warning.hidden=false;warning.textContent=\`Next bet (\${fmt(state.nextBet)}) is greater than the available bankroll (\${fmt(state.balance)}). The tracker has stopped; do not treat this as a recoverable state.\`;}
+    else {warning.hidden=true;warning.textContent='';}
+    const tbody=$('history');
+    if(!history.length) tbody.innerHTML='<tr><td colspan="6" class="empty">No bets recorded yet.</td></tr>';
+    else tbody.innerHTML=history.slice().reverse().map(r=>\`<tr><td>\${r.no}</td><td class="\${r.result==='WIN'?'green':'red'}">\${r.result}</td><td>\${fmt(r.bet)}</td><td class="\${r.net>=0?'green':'red'}">\${r.net>=0?'+':''}\${fmt(r.net)}</td><td>\${fmt(r.balance)}</td><td>\${r.mode}</td></tr>\`).join('');
+  }
+  $('win').addEventListener('click',()=>record('WIN'));$('loss').addEventListener('click',()=>record('LOSS'));
+  function undoLast(){const s=snapshots.pop();if(!s)return;state=s.state;history=history.slice(0,s.historyLength);render();}
+  document.addEventListener('keydown', event => {
+    const tag = event.target && event.target.tagName ? event.target.tagName.toLowerCase() : '';
+    const editing = ['input','textarea','select'].includes(tag) || (event.target && event.target.isContentEditable);
+    if (event.key === 'Escape') { event.preventDefault(); undoLast(); return; }
+    if (editing || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.key === 'ArrowUp') { event.preventDefault(); if (!$('win').disabled) record('WIN'); }
+    else if (event.key === 'ArrowDown') { event.preventDefault(); if (!$('loss').disabled) record('LOSS'); }
+  });
+  $('undo').addEventListener('click',undoLast);
+  $('reset').addEventListener('click',()=>{if(confirm('Reset bankroll and clear all bet history?'))init();});
+  $('apply').addEventListener('click',()=>{try{cfg=readConfig();if(confirm('Apply settings and reset this session?'))init();}catch(e){alert(e.message);}});
+  $('clear').addEventListener('click',()=>{if(confirm('Clear the displayed bet history? This does not change bankroll or strategy state.')){history=[];snapshots=[];render();}});
+  $('csv').addEventListener('click',()=>{const rows=[['Bet #','Result','Bet','Net change','Balance after','Mode after'],...history.map(r=>[r.no,r.result,r.bet,r.net,r.balance,r.mode])];const csv=rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='dice-strategy-history.csv';a.click();URL.revokeObjectURL(a.href);});
+  try{init();}catch(e){alert(e.message);}
+})();
+</script>
+</body>
+</html>
