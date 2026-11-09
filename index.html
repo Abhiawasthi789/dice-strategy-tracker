@@ -109,10 +109,23 @@
       }
     } else {
       if(!state.drawdownActive && state.balance<=state.cycleStart*(1-cfg.drawdown/100)+1e-9){
-        state.drawdownActive=true;state.nextBet=drawdownBet();
+        state.drawdownActive=true;state.wins=0;state.nextBet=drawdownBet();
       } else if(state.balance>=state.cycleStart-1e-9){
         state.balance=Math.max(state.balance,state.cycleStart);state.cycleStart=state.balance;state.mode='normal';state.wins=0;state.drawdownActive=false;state.nextBet=baseBet();
-      } else state.nextBet=roundTo(bet*cfg.mult,cfg.precision);
+      } else if(state.drawdownActive){
+        if(result==='WIN'){
+          state.wins++;
+          if(state.wins>=cfg.streak){
+            state.wins=0;
+            state.nextBet=drawdownBet();
+          } else state.nextBet=roundTo(bet*cfg.mult,cfg.precision);
+        } else {
+          state.wins=0;
+          state.nextBet=roundTo(bet*cfg.mult,cfg.precision);
+        }
+      } else {
+        state.nextBet=roundTo(bet*cfg.mult,cfg.precision);
+      }
     }
     if(state.mode==='recovery' && !state.drawdownActive && state.balance<=state.cycleStart*(1-cfg.drawdown/100)+1e-9){
       state.drawdownActive=true;state.nextBet=drawdownBet();
@@ -140,8 +153,8 @@
       progress=state.wins/cfg.streak*100;label='Consecutive-win progress';
     } else {
       const trigger=state.cycleStart*(1-cfg.drawdown/100);
-      status=state.drawdownActive?'10% drawdown recovery active':'Standard recovery active';
-      explain=state.drawdownActive?`First drawdown recovery bet was ${pct(cfg.recoveryPct)} of the balance when triggered. Next bet compounds by ${cfg.mult}× after each result.`:`Recover to the fixed cycle-start target. If balance reaches ${fmt(trigger)}, the next bet resets to ${pct(cfg.recoveryPct)} of current balance.`;
+      status=state.drawdownActive?`10% drawdown recovery · ${state.wins} / ${cfg.streak} consecutive wins`:'Standard recovery active';
+      explain=state.drawdownActive?`Recovery base: ${pct(cfg.recoveryPct)} of current bankroll. Bet increases by ${cfg.mult}× per result; after ${cfg.streak} consecutive wins it resets to the ${pct(cfg.recoveryPct)} base. A loss resets the win count.`:`Recover to the fixed cycle-start target. If balance reaches ${fmt(trigger)}, the next bet resets to ${pct(cfg.recoveryPct)} of current balance.`;
       progress=Math.max(0,Math.min(100,(state.balance-trigger)/(state.cycleStart-trigger)*100));
       const recovered=Math.max(0,Math.min(state.cycleStart-trigger,state.balance-trigger));
       const remaining=Math.max(0,state.cycleStart-state.balance);
