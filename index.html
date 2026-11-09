@@ -72,8 +72,8 @@
   let cfg, state, history = [], snapshots = [];
   const n = v => Number(v);
   const roundTo = (v, d) => { const p = 10 ** d; return Math.round((v + Number.EPSILON) * p) / p; };
-  const fmt = v => \`\${cfg.currency}\${Number(v).toLocaleString('en-IN',{minimumFractionDigits:cfg.precision,maximumFractionDigits:cfg.precision})}\`;
-  const pct = v => \`\${Number(v).toFixed(2)}%\`;
+  const fmt = v => `${cfg.currency}${Number(v).toLocaleString('en-IN',{minimumFractionDigits:cfg.precision,maximumFractionDigits:cfg.precision})}`;
+  const pct = v => `${Number(v).toFixed(2)}%`;
   function readConfig(){
     const c = {start:n($('start').value),basePct:n($('basePct').value),mult:n($('mult').value),streak:Math.floor(n($('streak').value)),drawdown:n($('drawdown').value),recoveryPct:n($('recoveryPct').value),currency:$('currency').value || '₹',precision:Math.floor(n($('precision').value))};
     if (!(c.start>0) || !(c.basePct>0) || !(c.mult>1) || !(c.streak>=1) || !(c.drawdown>0&&c.drawdown<100) || !(c.recoveryPct>0) || !(c.precision>=0&&c.precision<=8)) throw new Error('Please enter valid positive settings. Multiplier must be above 1 and drawdown must be between 0 and 100.');
@@ -123,26 +123,26 @@
     $('nextBet').textContent=fmt(state.nextBet);$('modePill').textContent=modeName()+' MODE';
     let status,explain,progress=0,label;
     if(state.mode==='normal'){
-      status=\`Normal cycle · \${state.wins} / \${cfg.streak} consecutive wins\`;
-      explain=\`Normal base: \${pct(cfg.basePct)} of cycle-start bankroll. A WIN advances the next bet by \${(cfg.mult-1)*100}% of the previous bet.\`;
+      status=`Normal cycle · ${state.wins} / ${cfg.streak} consecutive wins`;
+      explain=`Normal base: ${pct(cfg.basePct)} of cycle-start bankroll. A WIN advances the next bet by ${(cfg.mult-1)*100}% of the previous bet.`;
       progress=state.wins/cfg.streak*100;label='Consecutive-win progress';
     } else {
       const trigger=state.cycleStart*(1-cfg.drawdown/100);
       status=state.drawdownActive?'10% drawdown recovery active':'Standard recovery active';
-      explain=state.drawdownActive?\`First drawdown recovery bet was \${pct(cfg.recoveryPct)} of the balance when triggered. Next bet compounds by \${cfg.mult}× after each result.\`:\`Recover to the fixed cycle-start target. If balance reaches \${fmt(trigger)}, the next bet resets to \${pct(cfg.recoveryPct)} of current balance.\`;
-      progress=Math.max(0,Math.min(100,(state.balance-trigger)/(state.cycleStart-trigger)*100));label=\`Recovery progress · \${fmt(state.balance)} toward \${fmt(state.cycleStart)}\`;
+      explain=state.drawdownActive?`First drawdown recovery bet was ${pct(cfg.recoveryPct)} of the balance when triggered. Next bet compounds by ${cfg.mult}× after each result.`:`Recover to the fixed cycle-start target. If balance reaches ${fmt(trigger)}, the next bet resets to ${pct(cfg.recoveryPct)} of current balance.`;
+      progress=Math.max(0,Math.min(100,(state.balance-trigger)/(state.cycleStart-trigger)*100));label=`Recovery progress · ${fmt(state.balance)} toward ${fmt(state.cycleStart)}`;
     }
     $('status').textContent=status;$('explain').textContent=explain;$('progress').style.width=progress+'%';$('progressLabel').textContent=label;
-    $('drawdownLine').textContent=\`Drawdown trigger: \${fmt(state.cycleStart*(1-cfg.drawdown/100))}\`;
+    $('drawdownLine').textContent=`Drawdown trigger: ${fmt(state.cycleStart*(1-cfg.drawdown/100))}`;
     $('restBanner').classList.toggle('show', state.balance >= state.sessionStart * 1.10 - 1e-9);
     const cannot=state.nextBet>state.balance+1e-9 || state.nextBet<=0;
     $('win').disabled=cannot;$('loss').disabled=cannot;$('undo').disabled=snapshots.length===0;
     const warning=$('warning');
-    if(cannot){warning.hidden=false;warning.textContent=\`Next bet (\${fmt(state.nextBet)}) is greater than the available bankroll (\${fmt(state.balance)}). The tracker has stopped; do not treat this as a recoverable state.\`;}
+    if(cannot){warning.hidden=false;warning.textContent=`Next bet (${fmt(state.nextBet)}) is greater than the available bankroll (${fmt(state.balance)}). The tracker has stopped; do not treat this as a recoverable state.`;}
     else {warning.hidden=true;warning.textContent='';}
     const tbody=$('history');
     if(!history.length) tbody.innerHTML='<tr><td colspan="6" class="empty">No bets recorded yet.</td></tr>';
-    else tbody.innerHTML=history.slice().reverse().map(r=>\`<tr><td>\${r.no}</td><td class="\${r.result==='WIN'?'green':'red'}">\${r.result}</td><td>\${fmt(r.bet)}</td><td class="\${r.net>=0?'green':'red'}">\${r.net>=0?'+':''}\${fmt(r.net)}</td><td>\${fmt(r.balance)}</td><td>\${r.mode}</td></tr>\`).join('');
+    else tbody.innerHTML=history.slice().reverse().map(r=>`<tr><td>${r.no}</td><td class="${r.result==='WIN'?'green':'red'}">${r.result}</td><td>${fmt(r.bet)}</td><td class="${r.net>=0?'green':'red'}">${r.net>=0?'+':''}${fmt(r.net)}</td><td>${fmt(r.balance)}</td><td>${r.mode}</td></tr>`).join('');
   }
   $('win').addEventListener('click',()=>record('WIN'));$('loss').addEventListener('click',()=>record('LOSS'));
   function undoLast(){const s=snapshots.pop();if(!s)return;state=s.state;history=history.slice(0,s.historyLength);render();}
